@@ -1,2 +1,1 @@
-# MaskDetection
-Mask Detection Project
+This is a Mask Detection Project 
