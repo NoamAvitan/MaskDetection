@@ -5,12 +5,6 @@ from time import sleep
 from threading import Thread
 from objects import VideoStream, MaskObject, ScreenObject
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(13, GPIO.OUT)  # GPIO13 (pin 33)
-servo = GPIO.PWM(13, 50)  # GPIO13 (pin 33) for servo, operating at 50Hz
-servo.start(12)
-sleep(0.5)
-servo.ChangeDutyCycle(0)
 
 
 class Detection(object):
@@ -50,31 +44,37 @@ class Detection(object):
 
     def authorized_frames_run(self):
         """
-        # servo used is SG90:
-        # datasheet specifies that at 50Hz the range of 0 to 180 degrees
-        # can be targeted at 0.4ms to 2.4ms (or 2% to 12% duty cycle),
-        # where 0.4ms (2% dc) is 0 degrees, 1.4ms (7% dc) is 90 degrees,
-        # and 2.4ms (12% dc) is 180 degrees.
+        Opening Door
         """
         print("[INFO] 5 frame with Mask")
         self.camera.stop()
         screen = Thread(target=ScreenObject.play_entry_allowed_screen, args=())
         screen.start()
 
-        # Turn servo to 90 degrees
-        servo.ChangeDutyCycle(7)
-        sleep(0.5)
-        servo.ChangeDutyCycle(0)
+        GPIO.setmode(GPIO.BOARD)
 
-        # Wait for 2 seconds
+        # Set pin 11 as an output, and set servo1 as pin 11 as PWM
+        GPIO.setup(11,GPIO.OUT)
+        servo1 = GPIO.PWM(11,50) # Note 11 is pin, 50 = 50Hz pulse
+
+        servo1.start(0)
         sleep(2)
+        
+        # open door
+        duty = 9
+        servo1.ChangeDutyCycle(duty)
+        sleep(2)
+        
+        # close door
+        duty = 12
+        servo1.ChangeDutyCycle(duty)
+        sleep(3)
 
-        # Turn servo back to 0 degrees
-        servo.ChangeDutyCycle(12)
-        sleep(0.5)
-        servo.ChangeDutyCycle(0)
-
-        # Wait for 2 seconds
+        #Clean things up at the end
+        servo1.stop()
+        GPIO.cleanup()
+        self.authorized_frames_count = 0
+        self.unauthorized_frames_count = 0
         sleep(2)
         self.camera = VideoStream().start()
 

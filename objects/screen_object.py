@@ -58,6 +58,7 @@ class ScreenObject(object):
             # get box position on screen
             (startY, startX, endY, endX) = box
             # choose color and starting label for box
+            label = ''
             if 'No Mask' in pred_labels:
                 label = 'No Mask'
                 color = (0, 0, 255)
@@ -67,7 +68,6 @@ class ScreenObject(object):
             
             # add probability of prediction to label
             label += f' - {round(float(score)*100,2)}%'
-            # label = "{}: {:.2f}%".format(label, float(score) * 100)
             # display the label and bounding box rectangle on the output frame
             cv2.putText(frame, label, (startX, startY - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
